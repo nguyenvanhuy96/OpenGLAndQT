@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/Shaders">
+        <file>Resources/Shaders/obj.frag</file>
+        <file>Resources/Shaders/obj.vert</file>
+        <file>Resources/Shaders/light.frag</file>
+        <file>Resources/Shaders/light.vert</file>
+    </qresource>
+    <qresource prefix="/Images">
+        <file>Resources/Images/diffuseMapTex.png</file>
+        <file>Resources/Images/specularMapTex.png</file>
+    </qresource>
+</RCC>
