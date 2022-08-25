@@ -38,10 +38,20 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     {
         Vertex vertex;
         QVector3D vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
+        // tính toán điểm min và max
+        if(m_minX> mesh->mVertices[i].x) m_minX= mesh->mVertices[i].x;
+        if(m_maxX<mesh->mVertices[i].x) m_maxX= mesh->mVertices[i].x;
+
+        if(m_minY>mesh->mVertices[i].y) m_minY= mesh->mVertices[i].y;
+        if(m_maxY<mesh->mVertices[i].y) m_maxY= mesh->mVertices[i].y;
+
+        if(m_minZ>mesh->mVertices[i].z) m_minZ= mesh->mVertices[i].z;
+        if(m_maxZ<mesh->mVertices[i].z) m_maxZ= mesh->mVertices[i].z;
+
         // positions
-        vector.setX(  mesh->mVertices[i].x);
-        vector.setY(  mesh->mVertices[i].y);
-        vector.setZ(  mesh->mVertices[i].z);
+        vector.setX(mesh->mVertices[i].x);
+        vector.setY(mesh->mVertices[i].y);
+        vector.setZ(mesh->mVertices[i].z);
         vertex.Position = vector;
         // normals
         if (mesh->HasNormals())

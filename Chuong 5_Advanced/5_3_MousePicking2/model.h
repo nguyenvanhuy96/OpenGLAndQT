@@ -22,8 +22,10 @@ public:
             meshes[i].Draw(shader);
         }
     }
+    float m_minX=100, m_maxX=-100, m_minY=100, m_maxY=0, m_minZ=100, m_maxZ=-100;
 private:
     QOpenGLFunctions_3_3_Core *glFuncs;
+
     vector<Mesh> meshes;
     string directory;
     void loadModel(string path);
