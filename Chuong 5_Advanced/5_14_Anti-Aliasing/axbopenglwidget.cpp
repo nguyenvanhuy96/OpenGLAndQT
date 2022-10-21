@@ -12,6 +12,9 @@ float _near = 0.1f;
 float _far = 100.0f;
 AXBOpenGLWidget::AXBOpenGLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    QSurfaceFormat format;
+    format.setSamples(4); // Set the number of samples used for multisan.
+    setFormat(format); // note we set the format on the window.
     /*
         Cho phép kích hoạt sử dụng event keypress
         nếu khong có dòng này mà vẫn có code
@@ -32,12 +35,19 @@ void AXBOpenGLWidget::on_TimeOut()
 {
     update();
 }
-
-float points[] = {
-    -0.5f,  0.5f,1.0f,0.0f,0.0f, // top-left
-     0.5f,  0.5f,0.0f,1.0f,0.0f, // top-right
-     0.5f, -0.5f,0.0f,0.0f,1.0f, // bottom-right
-    -0.5f, -0.5f,1.0f,1.0f,0.0f  // bottom-left
+// Ngược chiều kim đồng hồ
+float Vertices_NguocKDH[] = {
+    // positions          // texture Coords
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+};
+// Cùng chiều kim đồng hồ
+float CCLVertices_CungKDH[] = {
+    // positions          // texture Coords
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+    0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
 };
 
 void AXBOpenGLWidget::initializeGL()
@@ -45,13 +55,12 @@ void AXBOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();
     // shader
     bool success;
-shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/Resources/Shaders/obj.vert");
-shaderProgram.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/Shaders/Resources/Shaders/obj.geom");
-shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/Resources/Shaders/obj.frag");
-shaderProgram.link();
-success = shaderProgram.link();
-if(!success)
-    qDebug() << "Error shader: " << shaderProgram.log();
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/Resources/Shaders/obj.vert");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/Resources/Shaders/obj.frag");
+    shaderProgram.link();
+    success = shaderProgram.link();
+    if(!success)
+        qDebug() << "Error shader: " << shaderProgram.log();
 
     lightshaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/Resources/Shaders/light.vert");
     lightshaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/Resources/Shaders/light.frag");
@@ -71,17 +80,16 @@ if(!success)
     texDiffuse = new QOpenGLTexture(QImage(":/Images/Resources/Images/diffuseMapTex.png").mirrored());
     texSpecular = new QOpenGLTexture(QImage(":/Images/Resources/Images/co.png").mirrored());
 
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(points), &points, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-    glBindVertexArray(0);
 
+
+    // Sử dụng mesh
+    //    m_model= new Model(QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>(),
+    //                       "C:/Users/HUY NGUYEN/Desktop/OpenGL vs QT/OpenGLAndQT/Chuong 4_Assimp/backpack/backpack.obj");
+
+
+
+    NKDHMesh= processMesh(Vertices_NguocKDH,3,texDiffuse->textureId());
+//    CKDHMesh= processMesh(CCLVertices_CungKDH,3,texSpecular->textureId());
     model.setToIdentity();
 }
 
@@ -105,6 +113,8 @@ void AXBOpenGLWidget::paintGL()
 {
     glClearColor(0.2f,0.3f,0.3f,1.0f);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     projection.setToIdentity();
     projection.perspective(m_camera.Zoom, (float)width()/height(), 0.1f, 100.0f);
@@ -113,8 +123,11 @@ void AXBOpenGLWidget::paintGL()
     model.setToIdentity();
 
     shaderProgram.bind();
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_LINES, 0, 4);
+    // Cùng chiều kim đồng hồ
+    NKDHMesh->Draw(shaderProgram);
+    model.translate(0.0f,3.0f,0.0f);
+    shaderProgram.setUniformValue("model", model);
+    NKDHMesh->Draw(shaderProgram);
 }
 
 void AXBOpenGLWidget::mousePressEvent(QMouseEvent *event)

@@ -34,10 +34,10 @@ void AXBOpenGLWidget::on_TimeOut()
 }
 
 float points[] = {
-    -0.5f,  0.5f,1.0f,0.0f,0.0f, // top-left
-     0.5f,  0.5f,0.0f,1.0f,0.0f, // top-right
-     0.5f, -0.5f,0.0f,0.0f,1.0f, // bottom-right
-    -0.5f, -0.5f,1.0f,1.0f,0.0f  // bottom-left
+    -0.5f,  0.5f, // top-left
+     0.5f,  0.5f, // top-right
+     0.5f, -0.5f, // bottom-right
+    -0.5f, -0.5f  // bottom-left
 };
 
 void AXBOpenGLWidget::initializeGL()
@@ -45,13 +45,13 @@ void AXBOpenGLWidget::initializeGL()
     initializeOpenGLFunctions();
     // shader
     bool success;
-shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/Resources/Shaders/obj.vert");
-shaderProgram.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/Shaders/Resources/Shaders/obj.geom");
-shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/Resources/Shaders/obj.frag");
-shaderProgram.link();
-success = shaderProgram.link();
-if(!success)
-    qDebug() << "Error shader: " << shaderProgram.log();
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/Resources/Shaders/obj.vert");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Geometry, ":/Shaders/Resources/Shaders/obj.geom");
+    shaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/Resources/Shaders/obj.frag");
+    shaderProgram.link();
+    success = shaderProgram.link();
+    if(!success)
+        qDebug() << "Error shader: " << shaderProgram.log();
 
     lightshaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/Resources/Shaders/light.vert");
     lightshaderProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/Shaders/Resources/Shaders/light.frag");
@@ -105,6 +105,7 @@ void AXBOpenGLWidget::paintGL()
 {
     glClearColor(0.2f,0.3f,0.3f,1.0f);
     glEnable(GL_DEPTH_TEST);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     projection.setToIdentity();
     projection.perspective(m_camera.Zoom, (float)width()/height(), 0.1f, 100.0f);
@@ -114,7 +115,7 @@ void AXBOpenGLWidget::paintGL()
 
     shaderProgram.bind();
     glBindVertexArray(VAO);
-    glDrawArrays(GL_LINES, 0, 4);
+    glDrawArrays(GL_POINTS, 0, 4);
 }
 
 void AXBOpenGLWidget::mousePressEvent(QMouseEvent *event)
